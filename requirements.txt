@@ -1,0 +1,4 @@
+plotly==5.10.0
+fpdf==1.7.2
+kaleido==0.2.1
+matplotlib==3.4.3
