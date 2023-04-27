@@ -78,7 +78,7 @@ with col1:
     Month_size                          =     st.slider("Number of Months to forecast",
                                                                 min_value = 12,
                                                                 max_value = 60,
-                                                                value = 12, disabled=True)
+                                                                value = 12, disabled=False)
 
 with col2:
     Periodicity = st.radio(
@@ -343,45 +343,6 @@ with st.sidebar: #.form(key='my_form'):
         
         
 
-# =============================================================================
-#     with st.expander("👩‍⚕️ Clinical Support Staffing"):    
-# 
-#         Existing_Hours_Per_Week                     =     st.slider("Hours of support per week per exisiting site",
-#                                                                 min_value = 1,
-#                                                                 max_value = 12,
-#                                                                 value = Set_Existing_Hours_Per_Week)
-#         
-#         New_Hours_Per_Week                          =     st.slider("Hours of support per week for a new site",
-#                                                                 min_value = 10,
-#                                                                 max_value = 40,
-#                                                                 value = Set_New_Hours_Per_Week)
-#               
-#         Max_Hours_Per_Week                          =     st.slider("Number of Maximum Hours per Week Per Specialist",
-#                                                                 min_value = 20,
-#                                                                 max_value = 55,
-#                                                                 value = Set_Max_Hours_Per_Week )
-#         
-#         Calibration_on_site                         =     st.slider("Calibration on-site time (min)",
-#                                                                 min_value = 15,
-#                                                                 max_value = 120,
-#                                                                 value = 30 )
-#         
-#         Patient_setup_call_time                     =     st.slider("Patient setup call time (min)",
-#                                                                 min_value = 15,
-#                                                                 max_value = 120,
-#                                                                 value = 60 )
-#         
-#         Follow_up_time                              =     st.slider("14-day follow-up time (min)",
-#                                                                 min_value = 15,
-#                                                                 max_value = 120,
-#                                                                 value = 45 )
-#         
-#         
-#         Noctrix_Tech_rate                             =     st.slider("Noctrix Tech rate per hour ($)",
-#                                                                 min_value = 45,
-#                                                                 max_value = 250,
-#                                                                 value = 120 )
-# =============================================================================
 
     with st.expander("👩‍⚕️ Clinical Support Staffing"):   
         Number_of_Patients_per_Tech                     =     st.slider("Number of Patients per Remote Tech",
@@ -452,7 +413,7 @@ with st.sidebar: #.form(key='my_form'):
 
         
     
-    #submit_button = st.form_submit_button(label='🖩 Calculate', on_click=form_callback)
+
 
     
 #%% Calculations
@@ -548,9 +509,12 @@ Total_patients = One_patient_amortization.sum(axis=0)
 # updated formula for new prescibers used to match Excel model for a 12 month model
 # ==================================================================  #
 
-Number_of_Sales_Reps = np.array([0,1,1,1,1,1,1,2,2,2,2,2,2])
+Salesperson_Rate = 6 # New Salesperson every 6 months
+Number_of_Sales_Reps = np.ceil(Month/Salesperson_Rate)
 Prescribers_Open_per_month_per_sales_rep = 2
+
 New_Clinics = Number_of_Sales_Reps * Prescribers_Open_per_month_per_sales_rep
+
 Total_prescribing_clinics = np.cumsum(New_Clinics)
 New_patients_by_month = Total_prescribing_clinics * Patients_Per_Clinic_Per_Month
 Total_patients = np.cumsum(New_patients_by_month)
@@ -681,7 +645,10 @@ ydfMax['Year'] = ydfMax.index
 
 ydf['Revenue'] = ydf['Monthly_Revenue']
 
+
+
 if Periodicity ==  'Monthly':
+    df = df[1:] # drop the 0 month
     
     #New_Clinics
     fig = px.bar(
@@ -703,7 +670,8 @@ if Periodicity ==  'Monthly':
         x=0.01
     ))
     
-    fig.update_layout(hovermode='x unified')
+    fig.update_layout(hovermode='x unified',         
+                      xaxis=dict(tickmode='linear',dtick=1))
     
     st.plotly_chart(fig, use_container_width=True)
 
@@ -727,7 +695,8 @@ if Periodicity ==  'Monthly':
         x=0.01
     ))
     
-    fig.update_layout(hovermode='x unified')
+    fig.update_layout(hovermode='x unified',         
+                      xaxis=dict(tickmode='linear',dtick=1))
 
     st.plotly_chart(fig, use_container_width=True)
 
@@ -751,7 +720,8 @@ if Periodicity ==  'Monthly':
         x=0.01
     ))
 
-    fig.update_layout(hovermode='x unified')
+    fig.update_layout(hovermode='x unified',         
+                      xaxis=dict(tickmode='linear',dtick=1))
     
     st.plotly_chart(fig, use_container_width=True)
 
@@ -776,7 +746,8 @@ if Periodicity ==  'Monthly':
         x=0.01
     ))
 
-    fig.update_layout(hovermode='x unified')
+    fig.update_layout(hovermode='x unified',         
+                      xaxis=dict(tickmode='linear',dtick=1))
 
     st.plotly_chart(fig, use_container_width=True)
 
@@ -800,44 +771,12 @@ if Periodicity ==  'Monthly':
         x=0.01
     ))
     
-    fig.update_layout(hovermode='x unified')
+    fig.update_layout(hovermode='x unified',         
+                      xaxis=dict(tickmode='linear',dtick=1))
 
     st.plotly_chart(fig, use_container_width=True)
 
 
-# =============================================================================
-#     fig = px.line(
-#         data_frame = df,
-#         x = "Month",
-#         y = ["Device_Percentage","Consumables_Percentage"],
-#         color_discrete_sequence=['deepskyblue','MediumSlateBlue'],
-#         orientation = "v",
-#         title='Devices vs Consumables Revenue',
-#         labels={'x': 'Month', 'value':'% of revenue'},
-#     )
-# 
-#     fig.update_layout(legend=dict(
-#         yanchor="top",
-#         y=0.99,
-#         xanchor="left",
-#         x=0.01
-#     ))
-#     
-#     fig.update_layout(hovermode='x unified')
-#     
-#     st.plotly_chart(fig, use_container_width=True)
-# =============================================================================
-    
-
-
-
-
-
-
-    
-
-
-    
 
     with st.expander("Costs, Inventory and Staff"):
         fig = px.bar(
@@ -859,7 +798,8 @@ if Periodicity ==  'Monthly':
             x=0.01
         ))
         
-        fig.update_layout(hovermode='x unified')
+        fig.update_layout(hovermode='x unified',         
+                          xaxis=dict(tickmode='linear',dtick=1))
     
         st.plotly_chart(fig, use_container_width=True)
         
@@ -882,7 +822,8 @@ if Periodicity ==  'Monthly':
             x=0.01
         ))
     
-        fig.update_layout(hovermode='x unified')
+        fig.update_layout(hovermode='x unified',         
+                          xaxis=dict(tickmode='linear',dtick=1))
         
         st.plotly_chart(fig, use_container_width=True)
         
@@ -905,7 +846,8 @@ if Periodicity ==  'Monthly':
             x=0.01
         ))
 
-        fig.update_layout(hovermode='x unified')
+        fig.update_layout(hovermode='x unified',         
+                          xaxis=dict(tickmode='linear',dtick=1))
 
         st.plotly_chart(fig, use_container_width=True)
 
