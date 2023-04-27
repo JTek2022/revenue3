@@ -481,7 +481,8 @@ for i in range(2,numMonths):
   pre = i-1   # previous month
   New_Clinics[i]               = (Total_prescribing_clinics[pre] * Number_Of_New_Clinics_Monthly_Growth) #np.ceil(Total_prescribing_clinics[pre] * Number_Of_New_Clinics_Monthly_Growth)
   Total_prescribing_clinics[i] = Total_prescribing_clinics[pre] + New_Clinics[i] 
-  New_patients_by_month[i]     = np.ceil(Total_prescribing_clinics[pre] * (Monthly_Growth ** Month[pre]) * Patients_Per_Clinic_Per_Month + New_Clinics[i] * Patients_Per_Clinic_Per_Month)
+  # had np.ceil in this step
+  New_patients_by_month[i]     = (Total_prescribing_clinics[pre] * (Monthly_Growth ** Month[pre]) * Patients_Per_Clinic_Per_Month + New_Clinics[i] * Patients_Per_Clinic_Per_Month)
 
 
 
@@ -498,7 +499,7 @@ Attrition_Rate = 1 - Patient_Attrition_Rate_Per_Month
 
 for row in range(2,numMonths):
   for col in range(row,numMonths):
-    One_patient_amortization[row][col] = np.ceil(One_patient_amortization[row-1][col-1] * Attrition_Rate)
+    One_patient_amortization[row][col] = (One_patient_amortization[row-1][col-1] * Attrition_Rate) # had np.ceil
 
 
 
