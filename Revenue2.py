@@ -225,7 +225,7 @@ with st.sidebar: #.form(key='my_form'):
                                                                 min_value = 0,
                                                                 max_value = 25,
                                                                 value = Set_New_Patients_In_Existing_Clinic_Annual_Growth,
-                                                                format="%i%%", disabled=True)*.01
+                                                                format="%i%%")*.01
         
         Patient_Attrition_Rate_Per_Month                =     st.slider("Patient Attrition Rate Per Month",
                                                                 min_value = 0,
@@ -534,7 +534,7 @@ Calibration_costs        = New_patients_by_month * Cost_per_Calibration_Session
 
 New_site_costs           = New_Clinics * Cost_per_New_site 
 
-CAC                      = New_patients_by_month *CAC_COGS_Y1
+
 
 #  ===
 
@@ -572,6 +572,8 @@ Consumables_Percentage = 1 - Device_Percentage
 
 # i indicates inventory, variables above are revenue
 
+
+
 iTOMA                  = np.zeros(numMonths) # each new patient requires TOMA
 iCCG                   = np.zeros(numMonths)
 iCDI                   = np.zeros(numMonths)
@@ -593,7 +595,21 @@ for month in Month:
     
     iCDI[month]  = (iTOMA[month] +                                              # each new TOMA will need a CCG kit
                    (Total_patients[CDI_Refill_Month] * Number_Per_Kit_CDI))     # The patients we had y months ago are due for a refill
-                   
+
+# c indicates cost
+
+cTOMA                  = np.zeros(numMonths) 
+cCCG                   = np.zeros(numMonths)
+cCDI                   = np.zeros(numMonths) 
+CAC                    = np.zeros(numMonths) 
+
+for month in Month:
+    cTOMA[month] = iTOMA[month] * (NTX_TOMAC_COGS_Y1           if month <= 12 else NTX_TOMAC_COGS_AF1 )
+    cCCG[month]  = iCCG[month] * (CCG_COGS_Y1                  if month <= 12 else CCG_COGS_AF1 )
+    cCDI[month]  = iCDI[month] * (CDI_COGS_Y1                  if month <= 12 else CDI_COGS_AF1)
+    CAC[month]   = New_patients_by_month[month] * (CAC_COGS_Y1 if month <=12 else CAC_COGS_AF1)
+
+            
 
 
 Quarter = np.ceil(Month /3)
@@ -625,7 +641,10 @@ df = pd.DataFrame({
     'Number of Field Clinical Specialists':Number_of_Field_Clinical_Specialists,
     'Number of Remote techs':Number_of_Remote_techs,
     'New site costs':New_site_costs,
-    'CAC':CAC})
+    'CAC':CAC,
+    'Cost of TOMAC':np.round(cTOMA, Decimal_places),
+    'Cost of CCG':np.round(cCCG, Decimal_places),
+    'Cost of CDI':np.round(cCDI, Decimal_places)})
 
 st.write("")
 st.write("")
@@ -710,6 +729,8 @@ barPlot(["Revenue Devices","Revenue Consumables"],'Devices vs Consumables Revenu
 with st.expander("Costs, Inventory and Staff"):
     # Inventory
     barPlot(['TOMAC Inventory','CCG Inventory','CDI Inventory'],'Inventory','Units')
+    # Inventory costs
+    barPlot(['Cost of CCG','Cost of CDI','Cost of TOMAC'],'Inventory Costs','Dollars USD $')
     # Costs
     barPlot(['Calibration costs','New site costs','CAC'],'Costs','Dollars USD $')
     barPlot(['Number of Field Clinical Specialists', 'Number of Remote techs'],'Number of Staff','Count')
@@ -717,9 +738,8 @@ with st.expander("Costs, Inventory and Staff"):
 
 #barPlot (yArray,                                  Title,                 Units,              maximize=False)
 
-
     
-#%%
+#%%  Drop down calculation table/dataframes
 
 with st.expander("Calculations"):
     st.write('Monthly')
@@ -735,7 +755,7 @@ with st.expander("Calculations"):
 with st.expander("Amortization Matrix"):
     One_patient_amortization
     
-
+# %% Save PDF
 with col3:
      PDFgen = st.button("⚙️ Generate PDF", disabled=True)
      if PDFgen:
