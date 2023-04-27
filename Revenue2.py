@@ -83,12 +83,12 @@ with col1:
 with col2:
     Periodicity = st.radio(
      "Periodicity:",
-     ('Yearly', 'Quarterly', 'Monthly'), index=2, disabled=True)
+     ('Yearly', 'Quarterly', 'Monthly'), index=2)
     
     Decimal_places                          =     st.slider("Number of Decimal Places",
                                                                 min_value = 0,
                                                                 max_value = 8,
-                                                                value = 0 )
+                                                                value = 2 )
 
 if choice == "Conservative":
     Set_Initial_Number_Of_Clinics                       = 1
@@ -205,13 +205,13 @@ with st.sidebar: #.form(key='my_form'):
         Initial_Number_Of_Clinics                       =     st.slider("Initial Number Of Clinics [#]",
                                                                 min_value = 0,
                                                                 max_value = 5,
-                                                                value = Set_Initial_Number_Of_Clinics, disabled=True)
+                                                                value = Set_Initial_Number_Of_Clinics)
     
         Number_Of_New_Clinics_Monthly_Growth            =     st.slider("Number Of New Clinics Monthly Growth",
                                                                 min_value = 0,
                                                                 max_value = 40,
                                                                 value = Set_Number_Of_New_Clinics_Monthly_Growth,
-                                                                format="%i%%",disabled=True)*.01
+                                                                format="%i%%")*.01
                
         Patients_Per_Clinic_Per_Month                   =     st.slider("Patients Per Clinic Per Month [#]",
                                                                 min_value = 0,
@@ -508,20 +508,23 @@ Total_patients = One_patient_amortization.sum(axis=0)
 # ==================================================================  #
 # updated formula for new prescibers used to match Excel model for a 12 month model
 # ==================================================================  #
+if False:
+    Salesperson_Rate = 6 # New Salesperson every 6 months
+    Number_of_Sales_Reps = np.ceil(Month/Salesperson_Rate)
+    Prescribers_Open_per_month_per_sales_rep = 2
+    
+    New_Clinics = Number_of_Sales_Reps * Prescribers_Open_per_month_per_sales_rep
+    
+    Total_prescribing_clinics = np.cumsum(New_Clinics)
+    New_patients_by_month = Total_prescribing_clinics * Patients_Per_Clinic_Per_Month
+    Total_patients = np.cumsum(New_patients_by_month)
+    # factor attrition
+    Total_patients = Total_patients * (1-Patient_Attrition_Rate_Per_Month)
+    New_patients_by_month = np.diff(Total_patients)
+    New_patients_by_month = np.insert(New_patients_by_month,0,Total_patients[0])
+#### experimental Sheet 3 complete
 
-Salesperson_Rate = 6 # New Salesperson every 6 months
-Number_of_Sales_Reps = np.ceil(Month/Salesperson_Rate)
-Prescribers_Open_per_month_per_sales_rep = 2
 
-New_Clinics = Number_of_Sales_Reps * Prescribers_Open_per_month_per_sales_rep
-
-Total_prescribing_clinics = np.cumsum(New_Clinics)
-New_patients_by_month = Total_prescribing_clinics * Patients_Per_Clinic_Per_Month
-Total_patients = np.cumsum(New_patients_by_month)
-# factor attrition
-Total_patients = Total_patients * (1-Patient_Attrition_Rate_Per_Month)
-New_patients_by_month = np.diff(Total_patients)
-New_patients_by_month = np.insert(New_patients_by_month,0,Total_patients[0])
 
 Number_of_Field_Clinical_Specialists = np.ceil(Total_patients / Number_of_Patients_per_Specialist)
 Number_of_Remote_techs = np.ceil(New_patients_by_month / Number_of_Patients_per_Tech )
@@ -601,31 +604,35 @@ df = pd.DataFrame({
     'Month':Month,
     'Quarter':Quarter,
     'Year':Year,
-    'New_Clinics':np.round(New_Clinics, Decimal_places) ,
-    'Total_prescribing_clinics':np.round(Total_prescribing_clinics, Decimal_places),
-    'New_patients_by_month':np.round(New_patients_by_month, Decimal_places),
-    'Total_patients':np.round(Total_patients, Decimal_places),
+    'New Clinics':np.round(New_Clinics, Decimal_places) ,
+    'Total prescribing clinics':np.round(Total_prescribing_clinics, Decimal_places),
+    'New patients by month':np.round(New_patients_by_month, Decimal_places),
+    'Total patients':np.round(Total_patients, Decimal_places),
     'Monthly_Revenue': np.round(Monthly_Revenue, Decimal_places),
-    'Revenue_New_Patients':np.round(Revenue_New_Patients, Decimal_places),
-    'Revenue_Existing_Patients':np.round(Revenue_Existing_Patients, Decimal_places),
-    'Revenue_Devices':np.round(Revenue_Devices, Decimal_places),
-    'Revenue_Consumables':np.round(Revenue_Consumables, Decimal_places),
-    'Device_Percentage':np.round(Device_Percentage, Decimal_places),
-    'Consumables_Percentage':np.round(Consumables_Percentage, Decimal_places),
-    'Staff_required':np.round(Staff_required, Decimal_places),
-    'TOMAC_Inventory':np.round(iTOMA, Decimal_places),
-    'CCG_Inventory':np.round(iCCG, Decimal_places),
-    'CDI_Inventory':np.round(iCDI, Decimal_places),
-    'Calibration_costs':Calibration_costs,
-    'Patient_Setup_Costs':Patient_Setup_Costs,
-    'Follow_up_Costs':Follow_up_Costs,
-    'Number_of_Field_Clinical_Specialists':Number_of_Field_Clinical_Specialists,
-    'Number_of_Remote_techs':Number_of_Remote_techs,
-    'New_site_costs':New_site_costs,
+    'Revenue New Patients':np.round(Revenue_New_Patients, Decimal_places),
+    'Revenue Existing Patients':np.round(Revenue_Existing_Patients, Decimal_places),
+    'Revenue Devices':np.round(Revenue_Devices, Decimal_places),
+    'Revenue Consumables':np.round(Revenue_Consumables, Decimal_places),
+    'Device Percentage':np.round(Device_Percentage, Decimal_places),
+    'Consumables Percentage':np.round(Consumables_Percentage, Decimal_places),
+    'Staff required':np.round(Staff_required, Decimal_places),
+    'TOMAC Inventory':np.round(iTOMA, Decimal_places),
+    'CCG Inventory':np.round(iCCG, Decimal_places),
+    'CDI Inventory':np.round(iCDI, Decimal_places),
+    'Calibration costs':Calibration_costs,
+    'Patient Setup Costs':Patient_Setup_Costs,
+    'Follow up Costs':Follow_up_Costs,
+    'Number of Field Clinical Specialists':Number_of_Field_Clinical_Specialists,
+    'Number of Remote techs':Number_of_Remote_techs,
+    'New site costs':New_site_costs,
     'CAC':CAC})
 
 st.write("")
 st.write("")
+
+#%% == creaate the quarterly and yearly DataFrames
+
+df['Revenue'] = df['Monthly_Revenue']
 
 qdf    = df.groupby('Quarter').sum()
 qdfMax = df.groupby('Quarter').max()  # for patient count
@@ -645,577 +652,32 @@ ydfMax['Year'] = ydfMax.index
 
 ydf['Revenue'] = ydf['Monthly_Revenue']
 
+#%% Main plots - barplot function
 
-
-if Periodicity ==  'Monthly':
-    df = df[1:] # drop the 0 month
+def barPlot(yArray, Title, Units, maximize=False):
     
-    #New_Clinics
-    fig = px.bar(
-        data_frame = df,
-        x = "Month",
-        y = ["New_Clinics","Total_prescribing_clinics"],
-        opacity = 0.5,
-        color_discrete_sequence=['deepskyblue','MediumSlateBlue'],
-        orientation = "v",
-        barmode = 'group',
-        title='Number of Clinics',
-        labels={'x': 'Month', 'value':'Number of Clinics'},
-    )
-
-    fig.update_layout(legend=dict(
-        yanchor="top",
-        y=0.99,
-        xanchor="left",
-        x=0.01
-    ))
-    
-    fig.update_layout(hovermode='x unified',         
-                      xaxis=dict(tickmode='linear',dtick=1))
-    
-    st.plotly_chart(fig, use_container_width=True)
-
-    # New_patients    
-    fig = px.bar(
-        data_frame = df,
-        x = "Month",
-        y = ['New_patients_by_month','Total_patients'],
-        opacity = 0.5,
-        color_discrete_sequence=['deepskyblue','MediumSlateBlue'],
-        orientation = "v",
-        barmode = 'group',
-        title='Number of Patients',
-        labels={'x': 'Month', 'value':'Number of Patients'},
-    )
-
-    fig.update_layout(legend=dict(
-        yanchor="top",
-        y=0.99,
-        xanchor="left",
-        x=0.01
-    ))
-    
-    fig.update_layout(hovermode='x unified',         
-                      xaxis=dict(tickmode='linear',dtick=1))
-
-    st.plotly_chart(fig, use_container_width=True)
-
-    # Revenue
-    fig = px.bar(
-        data_frame = df,
-        x = "Month",
-        y = ["Monthly_Revenue"], #,"Revenue_Devices"],
-        opacity = 0.5,
-        color_discrete_sequence=['MediumSlateBlue'],  
-        orientation = "v",
-        barmode = 'group',
-        title='Monthly Revenue',
-        labels={'x': 'Month', 'value':'Dollars USD'},
-    )
-
-    fig.update_layout(legend=dict(
-        yanchor="top",
-        y=0.99,
-        xanchor="left",
-        x=0.01
-    ))
-
-    fig.update_layout(hovermode='x unified',         
-                      xaxis=dict(tickmode='linear',dtick=1))
-    
-    st.plotly_chart(fig, use_container_width=True)
-
-
-
-    fig = px.bar(
-        data_frame = df,
-        x = "Month",
-        y = ["Revenue_New_Patients","Revenue_Existing_Patients"],
-        opacity = 0.5,
-        color_discrete_sequence=['deepskyblue','MediumSlateBlue'],
-        orientation = "v",
-        barmode = 'group',
-        title='Existing vs New Patient Revenue',
-        labels={'x': 'Month', 'value':'Dollars USD'},
-    )
-
-    fig.update_layout(legend=dict(
-        yanchor="top",
-        y=0.99,
-        xanchor="left",
-        x=0.01
-    ))
-
-    fig.update_layout(hovermode='x unified',         
-                      xaxis=dict(tickmode='linear',dtick=1))
-
-    st.plotly_chart(fig, use_container_width=True)
-
-
-    fig = px.bar(
-        data_frame = df,
-        x = "Month",
-        y = ["Revenue_Devices","Revenue_Consumables"],
-        opacity = 0.5,
-        color_discrete_sequence=['deepskyblue','MediumSlateBlue'],
-        orientation = "v",
-        barmode = 'group',
-        title='Devices vs Consumables Revenue',
-        labels={'x': 'Month', 'value':'Dollars USD'},
-    )
-
-    fig.update_layout(legend=dict(
-        yanchor="top",
-        y=0.99,
-        xanchor="left",
-        x=0.01
-    ))
-    
-    fig.update_layout(hovermode='x unified',         
-                      xaxis=dict(tickmode='linear',dtick=1))
-
-    st.plotly_chart(fig, use_container_width=True)
-
-
-
-    with st.expander("Costs, Inventory and Staff"):
-        fig = px.bar(
-            data_frame = df,
-            x = "Month",
-            y = ['TOMAC_Inventory','CCG_Inventory','CDI_Inventory'],
-            opacity = 0.5,
-            color_discrete_sequence=['deepskyblue','MediumSlateBlue','DarkTurquoise'],
-            orientation = "v",
-            barmode = 'group',
-            title='Inventory',
-            labels={'x': 'Month', 'value':'Inventory'}
-        )
-    
-        fig.update_layout(legend=dict(
-            yanchor="top",
-            y=0.99,
-            xanchor="left",
-            x=0.01
-        ))
-        
-        fig.update_layout(hovermode='x unified',         
-                          xaxis=dict(tickmode='linear',dtick=1))
-    
-        st.plotly_chart(fig, use_container_width=True)
-        
-        fig = px.bar(
-            data_frame = df,
-            x = "Month",
-            y = ['Calibration_costs','New_site_costs','CAC'],
-            opacity = 0.5,
-            color_discrete_sequence=['deepskyblue','MediumSlateBlue','DarkTurquoise'],
-            orientation = "v",
-            barmode = 'group',
-            title='Costs',
-            labels={'x': 'Month', 'value':'Cost'}
-        )    
-        
-        fig.update_layout(legend=dict(
-            yanchor="top",
-            y=0.99,
-            xanchor="left",
-            x=0.01
-        ))
-    
-        fig.update_layout(hovermode='x unified',         
-                          xaxis=dict(tickmode='linear',dtick=1))
-        
-        st.plotly_chart(fig, use_container_width=True)
-        
-        fig = px.bar(
-            data_frame = df,
-            x = "Month",
-            y = ['Number_of_Field_Clinical_Specialists', 'Number_of_Remote_techs'],
-            opacity = 0.5,
-            color_discrete_sequence=['deepskyblue','MediumSlateBlue'],
-            orientation = "v",
-            barmode = 'group',
-            title='Number of Staff',
-            labels={'x': 'Month', 'value':'Count'},
-        )
-
-        fig.update_layout(legend=dict(
-            yanchor="top",
-            y=0.99,
-            xanchor="left",
-            x=0.01
-        ))
-
-        fig.update_layout(hovermode='x unified',         
-                          xaxis=dict(tickmode='linear',dtick=1))
-
-        st.plotly_chart(fig, use_container_width=True)
-
-# display Quaterly plots
-
-if Periodicity ==  'Quarterly':
-    fig = px.bar(
-        data_frame = qdf,
-        x = "Quarter",
-        y = ["Revenue"], #,"Revenue_Devices"],
-        opacity = 0.5,
-        color_discrete_sequence=['MediumSlateBlue'],  
-        orientation = "v",
-        barmode = 'group',
-        title='Quarterly Revenue',
-        labels={'x': 'Quarter', 'value':'Dollars USD'},
-    )
-    
-    fig.update_layout(legend=dict(
-        yanchor="top",
-        y=0.99,
-        xanchor="left",
-        x=0.01
-    ))
-    
-    fig.update_layout(hovermode='x unified')    
-    
-    st.plotly_chart(fig, use_container_width=True)
-    
-
-    
-    
-    fig = px.bar(
-        data_frame = qdf,
-        x = "Quarter",
-        y = ["Revenue_New_Patients","Revenue_Existing_Patients"],
-        opacity = 0.5,
-        color_discrete_sequence=['deepskyblue','MediumSlateBlue'],
-        orientation = "v",
-        barmode = 'group',
-        title='Existing vs New Patient Revenue',
-        labels={'x': 'Quarter', 'value':'Dollars USD'},
-    )
-    
-    fig.update_layout(legend=dict(
-        yanchor="top",
-        y=0.99,
-        xanchor="left",
-        x=0.01
-    ))
-    
-    fig.update_layout(hovermode='x unified')
-    
-    st.plotly_chart(fig, use_container_width=True)
-    
-
+    # default is cumulative, in some cases(percentage) the maximum value is more approraite
+    if Periodicity ==  'Monthly':
+        DataFrame = df[1:]
+    if Periodicity ==  'Quarterly' and not maximize:
+        DataFrame = qdf[1:]
+    if Periodicity ==  'Quarterly' and maximize:
+        DataFrame = qdfMax[1:]
+    if Periodicity ==  'Yearly' and not maximize:
+        DataFrame = ydf[1:]
+    if Periodicity ==  'Yearly' and maximize:
+        DataFrame = ydfMax[1:]
         
     fig = px.bar(
-        data_frame = qdf,
-        x = "Quarter",
-        y = ["Revenue_Devices","Revenue_Consumables"],
-        opacity = 0.5,
-        color_discrete_sequence=['deepskyblue','MediumSlateBlue'],
-        orientation = "v",
-        barmode = 'group',
-        title='Devices vs Consumables Revenue',
-        labels={'x': 'Quarter', 'value':'Dollars USD'},
-    )
-    
-    fig.update_layout(legend=dict(
-        yanchor="top",
-        y=0.99,
-        xanchor="left",
-        x=0.01
-    ))
-    
-    fig.update_layout(hovermode='x unified')
-    
-    st.plotly_chart(fig, use_container_width=True)
-    
-
-    
-    fig = px.line(
-        data_frame = qdfMax,
-        x = "Quarter",
-        y = ["Device_Percentage","Consumables_Percentage"],
-        color_discrete_sequence=['deepskyblue','MediumSlateBlue'],
-        orientation = "v",
-        title='Devices vs Consumables Revenue',
-        labels={'x': 'Quarter', 'value':'% of revenue'},
-    )
-    
-    fig.update_layout(legend=dict(
-        yanchor="top",
-        y=0.99,
-        xanchor="left",
-        x=0.01
-    ))
-    
-    fig.update_layout(hovermode='x unified')
-    
-    st.plotly_chart(fig, use_container_width=True)
-    
-
-    
-    fig = px.bar(
-        data_frame = qdfMax,
-        x = "Quarter",
-        y = ["New_Clinics","Total_prescribing_clinics"],
-        opacity = 0.5,
-        color_discrete_sequence=['deepskyblue','MediumSlateBlue'],
-        orientation = "v",
-        barmode = 'group',
-        title='Number of Clinics',
-        labels={'x': 'Quarter', 'value':'Number of Clinics'},
-    )
-    
-    fig.update_layout(legend=dict(
-        yanchor="top",
-        y=0.99,
-        xanchor="left",
-        x=0.01
-    ))
-    
-    fig.update_layout(hovermode='x unified')
-    
-    st.plotly_chart(fig, use_container_width=True)
-    
-
-    
-    fig = px.bar(
-        data_frame = qdfMax,
-        x = "Quarter",
-        y = ['New_patients_by_month','Total_patients'],
-        opacity = 0.5,
-        color_discrete_sequence=['deepskyblue','MediumSlateBlue'],
-        orientation = "v",
-        barmode = 'group',
-        title='Number of Patients',
-        labels={'x': 'Quarter', 'value':'Number of Patients'},
-    )
-    
-    fig.update_layout(legend=dict(
-        yanchor="top",
-        y=0.99,
-        xanchor="left",
-        x=0.01
-    ))
-    
-    fig.update_layout(hovermode='x unified')
-    
-    st.plotly_chart(fig, use_container_width=True)
-    
-
-    
-    fig = px.bar(
-        data_frame = qdfMax,
-        x = "Quarter",
-        y = ['Staff_required'],
-        opacity = 0.5,
-        color_discrete_sequence=['MediumSlateBlue'],
-        orientation = "v",
-        barmode = 'group',
-        title='Number of Staff',
-        labels={'x': 'Quarter', 'value':'Staff'},
-    )
-
-    fig.update_layout(legend=dict(
-        yanchor="top",
-        y=0.99,
-        xanchor="left",
-        x=0.01
-    ))
-    
-    fig.update_layout(hovermode='x unified')
-
-    st.plotly_chart(fig, use_container_width=True)
-    
-
-
-    fig = px.bar(
-        data_frame = qdf,
-        x = "Quarter",
-        y = ['TOMAC_Inventory','CCG_Inventory','CDI_Inventory'],
+        data_frame = DataFrame,
+        x = Periodicity[:-2],
+        y = yArray,
         opacity = 0.5,
         color_discrete_sequence=['deepskyblue','MediumSlateBlue','DarkTurquoise'],
         orientation = "v",
         barmode = 'group',
-        title='Number of Inventory',
-        labels={'x': 'Quarter', 'value':'Number of Inventory'}
-    )    
-    
-    fig.update_layout(legend=dict(
-        yanchor="top",
-        y=0.99,
-        xanchor="left",
-        x=0.01
-    ))
-
-    fig.update_layout(hovermode='x unified')
-    
-    st.plotly_chart(fig, use_container_width=True)
-    
-
-
-# display Yearly plots
-
-if Periodicity ==  'Yearly':
-    fig = px.bar(
-        data_frame = ydf,
-        x = "Year",
-        y = ["Revenue"], #,"Revenue_Devices"],
-        opacity = 0.5,
-        color_discrete_sequence=['MediumSlateBlue'],  
-        orientation = "v",
-        barmode = 'group',
-        title='Yearly Revenue',
-        labels={'x': 'Year', 'value':'Dollars USD'},
-    )
-    
-    fig.update_layout(legend=dict(
-        yanchor="top",
-        y=0.99,
-        xanchor="left",
-        x=0.01
-    ))
-    
-    fig.update_layout(hovermode='x unified')
-    
-    st.plotly_chart(fig, use_container_width=True)
-    
-
-    
-    
-    
-    fig = px.bar(
-        data_frame = ydf,
-        x = "Year",
-        y = ["Revenue_New_Patients","Revenue_Existing_Patients"],
-        opacity = 0.5,
-        color_discrete_sequence=['deepskyblue','MediumSlateBlue'],
-        orientation = "v",
-        barmode = 'group',
-        title='Existing vs New Patient Revenue',
-        labels={'x': 'Year', 'value':'Dollars USD'},
-    )
-    
-    fig.update_layout(legend=dict(
-        yanchor="top",
-        y=0.99,
-        xanchor="left",
-        x=0.01
-    ))
-    
-    fig.update_layout(hovermode='x unified')
-    
-    st.plotly_chart(fig, use_container_width=True)
-    
-
-    
-    
-    fig = px.bar(
-        data_frame = ydf,
-        x = "Year",
-        y = ["Revenue_Devices","Revenue_Consumables"],
-        opacity = 0.5,
-        color_discrete_sequence=['deepskyblue','MediumSlateBlue'],
-        orientation = "v",
-        barmode = 'group',
-        title='Devices vs Consumables Revenue',
-        labels={'x': 'Year', 'value':'Dollars USD'},
-    )
-    
-    fig.update_layout(legend=dict(
-        yanchor="top",
-        y=0.99,
-        xanchor="left",
-        x=0.01
-    ))
-    
-    fig.update_layout(hovermode='x unified')
-    
-    st.plotly_chart(fig, use_container_width=True)
-    
-    
-    fig = px.line(
-        data_frame = ydfMax,
-        x = "Year",
-        y = ["Device_Percentage","Consumables_Percentage"],
-        color_discrete_sequence=['deepskyblue','MediumSlateBlue'],
-        orientation = "v",
-        title='Devices vs Consumables Revenue',
-        labels={'x': 'Year', 'value':'% of revenue'},
-    )
-    
-    fig.update_layout(legend=dict(
-        yanchor="top",
-        y=0.99,
-        xanchor="left",
-        x=0.01
-    ))
-    
-    fig.update_layout(hovermode='x unified')    
-    
-    st.plotly_chart(fig, use_container_width=True)
-    
-
-    
-    fig = px.bar(
-        data_frame = ydfMax,
-        x = "Year",
-        y = ["New_Clinics","Total_prescribing_clinics"],
-        opacity = 0.5,
-        color_discrete_sequence=['deepskyblue','MediumSlateBlue'],
-        orientation = "v",
-        barmode = 'group',
-        title='Number of Clinics',
-        labels={'x': 'Year', 'value':'Number of Clinics'},
-    )
-    
-    fig.update_layout(legend=dict(
-        yanchor="top",
-        y=0.99,
-        xanchor="left",
-        x=0.01
-    ))
-    
-    fig.update_layout(hovermode='x unified')
-    
-    st.plotly_chart(fig, use_container_width=True)
-    
-
-    
-    fig = px.bar(
-        data_frame = ydfMax,
-        x = "Year",
-        y = ['New_patients_by_month','Total_patients'],
-        opacity = 0.5,
-        color_discrete_sequence=['deepskyblue','MediumSlateBlue'],
-        orientation = "v",
-        barmode = 'group',
-        title='Number of Patients',
-        labels={'x': 'Year', 'value':'Number of Patients'},
-    )
-    
-    fig.update_layout(legend=dict(
-        yanchor="top",
-        y=0.99,
-        xanchor="left",
-        x=0.01
-    ))
-    
-    fig.update_layout(hovermode='x unified')
-    
-    st.plotly_chart(fig, use_container_width=True)
-    
-
-
-    fig = px.bar(
-        data_frame = ydfMax,
-        x = "Year",
-        y = ['Staff_required'],
-        opacity = 0.5,
-        color_discrete_sequence=['MediumSlateBlue'],
-        orientation = "v",
-        barmode = 'group',
-        title='Number of Staff',
-        labels={'x': 'Year', 'value':'Number of Support Staff'},
+        title=Title,
+        labels={'x': Periodicity[:-2], 'value':Units},
     )
 
     fig.update_layout(legend=dict(
@@ -1224,59 +686,38 @@ if Periodicity ==  'Yearly':
         xanchor="left",
         x=0.01
     ))
+    
+    fig.update_layout(hovermode='x unified',         
+                      xaxis=dict(tickmode='linear',dtick=1))
+    
+    st.plotly_chart(fig, use_container_width=True)   
 
-    fig.update_layout(hovermode='x unified')
-    
-    st.plotly_chart(fig, use_container_width=True)
-    
 
-    
-    fig = px.bar(
-        data_frame = ydf,
-        x = "Year",
-        y = ['TOMAC_Inventory','CCG_Inventory','CDI_Inventory'],
-        opacity = 0.5,
-        color_discrete_sequence=['deepskyblue','MediumSlateBlue','DarkTurquoise'],
-        orientation = "v",
-        barmode = 'group',
-        title='Number of Inventory',
-        labels={'x': 'Year', 'value':'Number of Inventory'}
-    )    
-    
-    fig.update_layout(legend=dict(
-        yanchor="top",
-        y=0.99,
-        xanchor="left",
-        x=0.01
-    ))
+#%% Main Layout
 
-    fig.update_layout(hovermode='x unified')
-    
-    st.plotly_chart(fig, use_container_width=True)
-    
+#barPlot (yArray,                                  Title,                 Units,              maximize=False)
+#New Clinics
+barPlot(["New Clinics","Total prescribing clinics"], "Number of Clinics", 'Number of Clinics', maximize=False)
+#New Patients
+barPlot(['New patients by month','Total patients'],"Number of Patients","Number of Patients")
+#Revenue
+barPlot(["Revenue"],f"{Periodicity} Revenue","Dollars USD $")
+#New Vs Existing
+barPlot(["Revenue New Patients","Revenue Existing Patients"],'Existing vs New Patient Revenue','Dollars USD $')
+#Device vs Consumables
+barPlot(["Revenue Devices","Revenue Consumables"],'Devices vs Consumables Revenue','Dollars USD $')
+#Seperator
+with st.expander("Costs, Inventory and Staff"):
+    # Inventory
+    barPlot(['TOMAC Inventory','CCG Inventory','CDI Inventory'],'Inventory','Units')
+    # Costs
+    barPlot(['Calibration costs','New site costs','CAC'],'Costs','Dollars USD $')
+    barPlot(['Number of Field Clinical Specialists', 'Number of Remote techs'],'Number of Staff','Count')
 
-    fig = px.bar(
-        data_frame = ydf,
-        x = "Year",
-        y = ['Calibration_costs','Patient_Setup_Costs','Follow_up_Costs'],
-        opacity = 0.5,
-        color_discrete_sequence=['deepskyblue','MediumSlateBlue','DarkTurquoise'],
-        orientation = "v",
-        barmode = 'group',
-        title='Support Costs',
-        labels={'x': 'Year', 'value':'Cost'}
-    )    
-    
-    fig.update_layout(legend=dict(
-        yanchor="top",
-        y=0.99,
-        xanchor="left",
-        x=0.01
-    ))
 
-    fig.update_layout(hovermode='x unified')
-    
-    st.plotly_chart(fig, use_container_width=True)
+#barPlot (yArray,                                  Title,                 Units,              maximize=False)
+
+
     
 #%%
 
