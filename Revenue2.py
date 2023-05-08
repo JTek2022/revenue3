@@ -550,12 +550,12 @@ for month in Month[1:]:
   if month <= Rental_Period_Refill_TOMA_PP:
     TOMA_PP[month] = (Number_Per_Kit_TOMA_PP * CMS_TOMA_PP)  / Rental_Period_Refill_TOMA_PP 
   # The CCG and CDI paid on refill months
-  
+  pre = month - 1
   # take the modulus and if its zero (not non-zero) then fill the value
-  if not (month % Rental_Period_Refill_CCG): 
+  if not (pre % Rental_Period_Refill_CCG): 
       CCG[month] = CMS_CCG
       
-  if not (month % Rental_Period_Refill_CDI):
+  if not (pre % Rental_Period_Refill_CDI):
       CDI[month] = CMS_CDI
     
 # if after rental period, leave as 0
@@ -602,6 +602,11 @@ for month in Month:
     
     iCDI[month]  = (iTOMA[month] +                                              # each new TOMA will need a CCG kit
                    (Total_patients[CDI_Refill_Month] * Number_Per_Kit_CDI))     # The patients we had y months ago are due for a refill
+
+#adjust the calculation for inventory using dot product
+
+iCCG = np.dot((CCG>0),One_patient_amortization)
+iCDI = np.dot((CDI>0),One_patient_amortization)
 
 # c indicates cost
 
@@ -713,7 +718,12 @@ def barPlot(yArray, Title, Units, maximize=False):
         x=0.01
     ))
     
-    fig.update_layout(hovermode='x unified',         
+    fig.update_layout(hovermode='x unified', 
+                      hoverlabel=dict(
+                            bgcolor="white",
+                            font_size=20,
+                            font_family="Rockwell"
+                        ),
                       xaxis=dict(tickmode='linear',dtick=1))
     
     st.plotly_chart(fig, use_container_width=True)   
