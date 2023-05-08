@@ -634,7 +634,7 @@ df = pd.DataFrame({
     'Year':Year,
     'New Clinics':np.round(New_Clinics, Decimal_places) ,
     'Total prescribing clinics':np.round(Total_prescribing_clinics, Decimal_places),
-    'New patients by month':np.round(New_patients_by_month, Decimal_places),
+    'New patients':np.round(New_patients_by_month, Decimal_places),
     'Total patients':np.round(Total_patients, Decimal_places),
     'Monthly_Revenue': np.round(Monthly_Revenue, Decimal_places),
     'Revenue New Patients':np.round(Revenue_New_Patients, Decimal_places),
@@ -682,6 +682,14 @@ ydfMax['Year'] = ydfMax.index
    
 
 ydf['Revenue'] = ydf['Monthly_Revenue']
+
+#totals need to be based on max
+qdf['Total patients'] = qdfMax['Total patients']
+ydf['Total patients'] = ydfMax['Total patients']
+
+qdf['Total prescribing clinics'] = qdfMax['Total prescribing clinics']
+ydf['Total prescribing clinics'] = ydfMax['Total prescribing clinics']
+
 
 #%% Main plots - barplot function
 
@@ -733,7 +741,7 @@ def barPlot(yArray, Title, Units, maximize=False):
 #New Clinics
 barPlot(["New Clinics","Total prescribing clinics"], "Number of Clinics", 'Number of Clinics', maximize=False)
 #New Patients
-barPlot(['New patients by month','Total patients'],"Number of Patients","Number of Patients")
+barPlot(['New patients','Total patients'],"Number of Patients","Number of Patients")
 #Revenue
 barPlot(["Revenue"],f"{Periodicity} Revenue","Dollars USD $")
 #New Vs Existing
