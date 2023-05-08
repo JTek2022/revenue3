@@ -39,7 +39,7 @@ st.markdown(hide_decoration_bar_style, unsafe_allow_html=True)
 
 
 Set_Initial_Number_Of_Clinics                       = 2
-Set_Number_Of_New_Clinics_Monthly_Growth            = 10
+Set_Number_Of_New_Clinics_Annual_Growth             = 10
 Set_Patients_Per_Clinic_Per_Month                   = 2
 Set_New_Patients_In_Existing_Clinic_Annual_Growth   = 10
 Set_Patient_Attrition_Rate_Per_Month                = 20
@@ -48,9 +48,9 @@ Set_Rental_Period_Refill_TOMA_CMS                   = 13
 Set_Rental_Period_Refill_TOMA_PP                    = 6
 Set_Rental_Period_Refill_CCG                        = 3
 Set_Rental_Period_Refill_CDI                        = 1
-Set_CMS_TOMA_CMS                                    = 450* 2
-Set_CMS_CCG                                         = 250* 2
-Set_CMS_CDI                                         = 14 * 2
+Set_CMS_TOMA_CMS                                    = 7500
+Set_CMS_CCG                                         = 200
+Set_CMS_CDI                                         = 30
 Set_Private_Payer_Premium_Over_Medicare             = 40
 
 
@@ -73,12 +73,12 @@ col1, col2, col3 = st.columns(3)
 with col1:
     choice = st.radio(
      "Choose Preset",
-     ('Optimistic', 'Conservative', 'Realistic'), index=2, disabled=False, on_change=resetDefault)
+     ('Optimistic', 'Conservative', 'Realistic'), index=0, disabled=False, on_change=resetDefault)
     
     Month_size                          =     st.slider("Number of Months to forecast",
                                                                 min_value = 12,
                                                                 max_value = 60,
-                                                                value = 12, disabled=False)
+                                                                value = 36, disabled=False)
 
 with col2:
     Periodicity = st.radio(
@@ -88,11 +88,11 @@ with col2:
     Decimal_places                          =     st.slider("Number of Decimal Places",
                                                                 min_value = 0,
                                                                 max_value = 8,
-                                                                value = 2 )
+                                                                value = 0 )
 
 if choice == "Conservative":
     Set_Initial_Number_Of_Clinics                       = 1
-    Set_Number_Of_New_Clinics_Monthly_Growth            = 5
+    Set_Number_Of_New_Clinics_Annual_Growth            = 5
     Set_Patients_Per_Clinic_Per_Month                   = 2
     Set_New_Patients_In_Existing_Clinic_Annual_Growth   = 5
     Set_Patient_Attrition_Rate_Per_Month                = 15
@@ -109,7 +109,7 @@ if choice == "Conservative":
 
 if choice == "Realistic":
     Set_Initial_Number_Of_Clinics                       = 2
-    Set_Number_Of_New_Clinics_Monthly_Growth            = 10
+    Set_Number_Of_New_Clinics_Annual_Growth            = 10
     Set_Patients_Per_Clinic_Per_Month                   = 2 # was 4, set to match new excel model
     Set_New_Patients_In_Existing_Clinic_Annual_Growth   = 10
     Set_Patient_Attrition_Rate_Per_Month                = 10
@@ -125,20 +125,20 @@ if choice == "Realistic":
     
     
 if choice == "Optimistic":
-    Set_Initial_Number_Of_Clinics                       = 4
-    Set_Number_Of_New_Clinics_Monthly_Growth            = 20
-    Set_Patients_Per_Clinic_Per_Month                   = 6
-    Set_New_Patients_In_Existing_Clinic_Annual_Growth   = 15
-    Set_Patient_Attrition_Rate_Per_Month                = 5
+    Set_Initial_Number_Of_Clinics                       = 10
+    Set_Number_Of_New_Clinics_Annual_Growth             = 50
+    Set_Patients_Per_Clinic_Per_Month                   = 4
+    Set_New_Patients_In_Existing_Clinic_Annual_Growth   = 10
+    Set_Patient_Attrition_Rate_Per_Month                = 10
     Set_Percent_Patients_On_Medicare                    = 30
     Set_Rental_Period_Refill_TOMA_CMS                   = 13
-    Set_Rental_Period_Refill_TOMA_PP                    = 4
+    Set_Rental_Period_Refill_TOMA_PP                    = 13
     Set_Rental_Period_Refill_CCG                        = 3
-    Set_Rental_Period_Refill_CDI                        = 3
-    Set_CMS_TOMA_CMS                                    = 750* 2
-    Set_CMS_CCG                                         = 375* 2
-    Set_CMS_CDI                                         = 90* 2
-    Set_Private_Payer_Premium_Over_Medicare             = 50
+    Set_Rental_Period_Refill_CDI                        = 1
+    Set_CMS_TOMA_CMS                                    = 7500
+    Set_CMS_CCG                                         = 200
+    Set_CMS_CDI                                         = 30
+    Set_Private_Payer_Premium_Over_Medicare             = 0
     
 # Default Support model values, can be implemented into optimising options 
 
@@ -207,10 +207,10 @@ with st.sidebar: #.form(key='my_form'):
                                                                 max_value = 5,
                                                                 value = Set_Initial_Number_Of_Clinics)
     
-        Number_Of_New_Clinics_Monthly_Growth            =     st.slider("Number Of New Clinics Monthly Growth",
+        Number_Of_New_Clinics__Annual_Growth            =     st.slider("Number Of New Clinics Annual Growth",
                                                                 min_value = 0,
-                                                                max_value = 40,
-                                                                value = Set_Number_Of_New_Clinics_Monthly_Growth,
+                                                                max_value = 100,
+                                                                value = Set_Number_Of_New_Clinics_Annual_Growth,
                                                                 format="%i%%")*.01
                
         Patients_Per_Clinic_Per_Month                   =     st.slider("Patients Per Clinic Per Month [#]",
@@ -295,6 +295,7 @@ with st.sidebar: #.form(key='my_form'):
                                                                 max_value = 12000,                                                             
                                                                 format="$%i",
                                                                 key="slider_kit",
+                                                                value  = Set_CMS_TOMA_CMS,
                                                                 on_change=update_text_kit,
                                                                 label_visibility="collapsed")
        
@@ -312,6 +313,7 @@ with st.sidebar: #.form(key='my_form'):
                                                             max_value = 3000,
                                                             format="$%i",
                                                             key = "slider_CCG",
+                                                            value=Set_CMS_CCG,
                                                             on_change = update_text_CCG,
                                                             label_visibility="collapsed")
        
@@ -328,6 +330,7 @@ with st.sidebar: #.form(key='my_form'):
                                                                 max_value = 1100,
                                                                 format="$%i",
                                                                 key = "slider_CDI",
+                                                                value = Set_CMS_CDI,
                                                                 on_change=update_text_CDI,
                                                                 label_visibility="collapsed")
         
@@ -452,56 +455,50 @@ Blended_CDI                 =  (Percent_Patients_On_Medicare * Total_CDI) + (Per
 numMonths = Month_size + 1 # add one to the actual number you want
 
 
-Month                       = np.arange(numMonths)
-New_Clinics                 = np.zeros(numMonths)
-Total_prescribing_clinics   = np.zeros(numMonths)
-New_patients_by_month       = np.zeros(numMonths)
-Hours_required              = np.zeros(numMonths)
-Staff_required              = np.zeros(numMonths)
-Calibration_costs           = np.zeros(numMonths)
-Patient_Setup_Costs         = np.zeros(numMonths)
-Follow_up_Costs             = np.zeros(numMonths)
-NTX100_TOMAC_Kit_COGS       = np.zeros(numMonths)
-CDI_COGS                    = np.zeros(numMonths)
-CCG_COGS                    = np.zeros(numMonths)
+Month                             = np.arange(numMonths)
+New_Clinics                       = np.zeros(numMonths)
+Total_prescribing_clinics         = np.zeros(numMonths)
+New_patients_by_month             = np.zeros(numMonths)
+Hours_required                    = np.zeros(numMonths)
+Staff_required                    = np.zeros(numMonths)
+Calibration_costs                 = np.zeros(numMonths)
+Patient_Setup_Costs               = np.zeros(numMonths)
+Follow_up_Costs                   = np.zeros(numMonths)
+NTX100_TOMAC_Kit_COGS             = np.zeros(numMonths)
+CDI_COGS                          = np.zeros(numMonths)
+CCG_COGS                          = np.zeros(numMonths)
+New_patients_per_month_per_clinic = np.zeros(numMonths)
 
 # Month one inital condition
-New_Clinics[1]               = Initial_Number_Of_Clinics
-Total_prescribing_clinics[1] = Initial_Number_Of_Clinics
-New_patients_by_month[1]     = Initial_Number_Of_Clinics * Patients_Per_Clinic_Per_Month
-Calibration_costs[1]         = New_patients_by_month[1] * Cost_per_Calibration_Session
-
+New_Clinics[1]                      = Initial_Number_Of_Clinics
+Total_prescribing_clinics[1]        = Initial_Number_Of_Clinics
+New_patients_by_month[1]            = Initial_Number_Of_Clinics * Patients_Per_Clinic_Per_Month
+Calibration_costs[1]                = New_patients_by_month[1] * Cost_per_Calibration_Session
+New_patients_per_month_per_clinic[1]= Patients_Per_Clinic_Per_Month  
 
 # one time calculation for monthly growth factor
 
-Monthly_Growth = (1 + New_Patients_In_Existing_Clinic_Annual_Growth / 12)
+Monthly_Growth = 1 + (New_Patients_In_Existing_Clinic_Annual_Growth / 12)
+
+Number_Of_New_Clinics_Monthly_Growth = Number_Of_New_Clinics__Annual_Growth / 12
 
 # Loop for remaining months
 for i in range(2,numMonths):
   pre = i-1   # previous month
-  New_Clinics[i]               = (Total_prescribing_clinics[pre] * Number_Of_New_Clinics_Monthly_Growth) #np.ceil(Total_prescribing_clinics[pre] * Number_Of_New_Clinics_Monthly_Growth)
-  Total_prescribing_clinics[i] = Total_prescribing_clinics[pre] + New_Clinics[i] 
+  New_Clinics[i]                       = (Total_prescribing_clinics[pre] * Number_Of_New_Clinics_Monthly_Growth) #np.ceil(Total_prescribing_clinics[pre] * Number_Of_New_Clinics_Monthly_Growth)
+  Total_prescribing_clinics[i]         = Total_prescribing_clinics[pre] + New_Clinics[i] 
   # had np.ceil in this step
-  New_patients_by_month[i]     = (Total_prescribing_clinics[pre] * (Monthly_Growth ** Month[pre]) * Patients_Per_Clinic_Per_Month + New_Clinics[i] * Patients_Per_Clinic_Per_Month)
-
-
-
-
-
+  New_patients_per_month_per_clinic[i] = New_patients_per_month_per_clinic[pre] * Monthly_Growth
+  #New_patients_by_month[i]             = (Total_prescribing_clinics[pre] * (Monthly_Growth ** Month[pre]) * Patients_Per_Clinic_Per_Month + New_Clinics[i] * Patients_Per_Clinic_Per_Month)
+  New_patients_by_month[i]             = Total_prescribing_clinics[i] * New_patients_per_month_per_clinic[i]
 
 One_patient_amortization = np.zeros((numMonths,numMonths))
 One_patient_amortization[1] =  New_patients_by_month
 Attrition_Rate = 1 - Patient_Attrition_Rate_Per_Month
 
-
-
-
-
 for row in range(2,numMonths):
   for col in range(row,numMonths):
-    One_patient_amortization[row][col] = (One_patient_amortization[row-1][col-1] * Attrition_Rate) # had np.ceil
-
-
+    One_patient_amortization[row][col] = np.ceil(One_patient_amortization[row-1][col-1] * Attrition_Rate) # had np.ceil
 
 Total_patients = One_patient_amortization.sum(axis=0)
 
@@ -545,18 +542,27 @@ CCG                        = np.zeros(numMonths)
 CDI                        = np.zeros(numMonths)
 
 # For TOMA, check if within rental period before calculating
-for month in Month:
+for month in Month[1:]:
   if month <= Rental_Period_Refill_TOMA_CMS:
     TOMA_CMS[month] = (Number_Per_Kit_TOMA_CMS * CMS_TOMA_CMS) / Rental_Period_Refill_TOMA_CMS
+    #else 0 as prefilled
 
   if month <= Rental_Period_Refill_TOMA_PP:
     TOMA_PP[month] = (Number_Per_Kit_TOMA_PP * CMS_TOMA_PP)  / Rental_Period_Refill_TOMA_PP 
+  # The CCG and CDI paid on refill months
+  
+  # take the modulus and if its zero (not non-zero) then fill the value
+  if not (month % Rental_Period_Refill_CCG): 
+      CCG[month] = CMS_CCG
+      
+  if not (month % Rental_Period_Refill_CDI):
+      CDI[month] = CMS_CDI
     
 # if after rental period, leave as 0
 
 # cast to all values the same result for CCG and CDI
-CCG[:] = Blended_CCG / Rental_Period_Refill_CCG
-CDI[:] = Blended_CDI / Rental_Period_Refill_CDI
+#CCG[:] = Blended_CCG / Rental_Period_Refill_CCG
+#CDI[:] = Blended_CDI / Rental_Period_Refill_CDI
 
 Total = (TOMA_CMS * Percent_Patients_On_Medicare) + (TOMA_PP * Percent_Private) + CCG + CDI
 
