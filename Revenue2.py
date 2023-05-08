@@ -720,9 +720,7 @@ def barPlot(yArray, Title, Units, maximize=False):
     
     fig.update_layout(hovermode='x unified', 
                       hoverlabel=dict(
-                            bgcolor="white",
-                            font_size=20,
-                            font_family="Rockwell"
+                            font_size=20
                         ),
                       xaxis=dict(tickmode='linear',dtick=1))
     
