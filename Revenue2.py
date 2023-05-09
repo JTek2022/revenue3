@@ -348,15 +348,15 @@ with st.sidebar: #.form(key='my_form'):
 
 
     with st.expander("👩‍⚕️ Clinical Support Staffing"):   
-        Number_of_Patients_per_Tech                     =     st.slider("Number of Patients per Remote Tech",
+        Number_of_Patients_per_Tech                     =     st.slider("Number of New Patients per Month per Remote Tech",
                                                                 min_value = 10,
                                                                 max_value = 50,
-                                                                value = 20)
+                                                                value = 25)
         
-        Number_of_Patients_per_Specialist               =     st.slider("Number of Patients per Field Clinical Specialist",
-                                                                min_value = 80,
-                                                                max_value = 300,
-                                                                value = 200)
+        # Number_of_Patients_per_Specialist               =     st.slider("Number of Patients per Field Clinical Specialist",
+        #                                                         min_value = 80,
+        #                                                         max_value = 300,
+        #                                                         value = 200)
         
         Cost_per_Calibration_Session                    =     st.slider("Cost of a Calibration Session",
                                                                 min_value = 100,
@@ -524,7 +524,7 @@ if False:
 
 
 
-Number_of_Field_Clinical_Specialists = np.ceil(Total_patients / Number_of_Patients_per_Specialist)
+#Number_of_Field_Clinical_Specialists = np.ceil(Total_patients / Number_of_Patients_per_Specialist)
 Number_of_Remote_techs = np.ceil(New_patients_by_month / Number_of_Patients_per_Tech )
 
 
@@ -650,7 +650,7 @@ df = pd.DataFrame({
     'Calibration costs':Calibration_costs,
     'Patient Setup Costs':Patient_Setup_Costs,
     'Follow up Costs':Follow_up_Costs,
-    'Number of Field Clinical Specialists':Number_of_Field_Clinical_Specialists,
+    #'Number of Field Clinical Specialists':Number_of_Field_Clinical_Specialists,
     'Number of Remote techs':Number_of_Remote_techs,
     'New site costs':New_site_costs,
     'CAC':CAC,
@@ -756,7 +756,7 @@ with st.expander("Costs, Inventory and Staff"):
     barPlot(['Cost of CCG','Cost of CDI','Cost of TOMAC'],'Inventory Costs','Dollars USD $')
     # Costs
     barPlot(['Calibration costs','New site costs','CAC'],'Costs','Dollars USD $')
-    barPlot(['Number of Field Clinical Specialists', 'Number of Remote techs'],'Number of Staff','Count')
+    barPlot(['Number of Remote techs'],'Number of Staff','Count')
 
 
 #barPlot (yArray,                                  Title,                 Units,              maximize=False)
