@@ -126,7 +126,7 @@ if choice == "Realistic":
     
 if choice == "Optimistic":
     Set_Initial_Number_Of_Clinics                       = 10
-    Set_Number_Of_New_Clinics_Annual_Growth             = 50
+    Set_Number_Of_New_Clinics_Annual_Growth             = 40
     Set_Patients_Per_Clinic_Per_Month                   = 4
     Set_New_Patients_In_Existing_Clinic_Annual_Growth   = 10
     Set_Patient_Attrition_Rate_Per_Month                = 10
@@ -137,7 +137,7 @@ if choice == "Optimistic":
     Set_Rental_Period_Refill_CDI                        = 1
     Set_CMS_TOMA_CMS                                    = 7500
     Set_CMS_CCG                                         = 200
-    Set_CMS_CDI                                         = 30
+    Set_CMS_CDI                                         = 45
     Set_Private_Payer_Premium_Over_Medicare             = 0
     
 # Default Support model values, can be implemented into optimising options 
@@ -239,7 +239,28 @@ with st.sidebar: #.form(key='my_form'):
                                                                 max_value = 100,
                                                                 value = Set_Percent_Patients_On_Medicare,
                                                                 format="%i%%")*.01
-    
+    with st.expander("📈 Center Productivity Parameters"):                             
+        Patients_per_month_per_prescriber               =     st.slider("Patients / month / prescriber",
+                                                                min_value = 0,
+                                                                max_value = 25,
+                                                                value = 4)
+        
+        Number_of_prescribers_added_per_month           =     st.slider("Number of prescribers added per month",
+                                                                min_value = 0,
+                                                                max_value = 25,
+                                                                value = 1)
+        
+        Center_max_patients_per_month                   =     st.slider("Center max patients per month",
+                                                                min_value = 0,
+                                                                max_value = 70,
+                                                                value = 30)
+        
+        
+        Number_of_prescribers_needed_to_max             =     st.slider("Number of prescribers needed to max",
+                                                                min_value = 0,
+                                                                max_value = 15,
+                                                                value = 8)
+            
 
     
     #Number per kit
@@ -524,6 +545,47 @@ if False:
 
 
 
+# ==================================================================  #
+# updated formula for Center productivity model
+# ==================================================================  #
+Center_productivity = col3.checkbox("Center Productivity Calculations", value=True, help="When disabled, uses previous model based on growth and attritrion.")
+if Center_productivity:
+ Center_productivity_matrix = np.zeros((numMonths,numMonths))
+ 
+ #setup empty arrays to loop over
+ New_prescribers_added = np.zeros(numMonths)
+ Total_prescribers     = np.zeros(numMonths)
+ New_patients          = np.zeros(numMonths)
+ 
+ for month in range(1,numMonths):
+     New_prescribers_added[month] = Number_of_prescribers_added_per_month if month <= Number_of_prescribers_needed_to_max else 0
+     Total_prescribers[month] = np.sum(New_prescribers_added)
+     New_patients[month] = Total_prescribers[month] * Patients_per_month_per_prescriber
+     
+     
+ 
+ 
+ Center_productivity_matrix[1] =  New_patients
+ 
+
+ for row in range(2,numMonths):
+   for col in range(row,numMonths):
+     Center_productivity_matrix[row][col] = Center_productivity_matrix[row-1][col-1] 
+     
+ New_patients_by_month = np.dot(New_Clinics,Center_productivity_matrix)  
+ 
+ One_patient_amortization = np.zeros((numMonths,numMonths))
+ One_patient_amortization[1] =  New_patients_by_month
+ Attrition_Rate = 1 - Patient_Attrition_Rate_Per_Month
+
+ for row in range(2,numMonths):
+   for col in range(row,numMonths):
+     One_patient_amortization[row][col] = np.ceil(One_patient_amortization[row-1][col-1] * Attrition_Rate) # had np.ceil
+
+ Total_patients = One_patient_amortization.sum(axis=0)
+   
+
+
 #Number_of_Field_Clinical_Specialists = np.ceil(Total_patients / Number_of_Patients_per_Specialist)
 Number_of_Remote_techs = np.ceil(New_patients_by_month / Number_of_Patients_per_Tech )
 
@@ -781,6 +843,7 @@ with st.expander("Amortization Matrix"):
 # %% Save PDF
 with col3:
      PDFgen = st.button("⚙️ Generate PDF", disabled=True)
+     
      if PDFgen:
         with st.spinner('Generating PDF...'):
             pdf = FPDF(orientation="P", unit="mm", format="Letter")
